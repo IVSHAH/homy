@@ -1,34 +1,67 @@
-// @ts-check
-import eslint from '@eslint/js';
-import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
+import eslint from '@eslint/js';
 import tseslint from 'typescript-eslint';
+import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs'],
+    rules: {
+      ...eslint.configs.recommended.rules,
+      'no-undef': 'off',
+    },
   },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommendedTypeChecked,
-  eslintPluginPrettierRecommended,
+  ...tseslint.configs.recommended.map((it) => {
+    if (it.name !== 'typescript-eslint/recommended') {
+      return it;
+    }
+    return {
+      ...it,
+      rules: {
+        ...it.rules,
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-unused-vars': [
+          'error',
+          {
+            caughtErrorsIgnorePattern: '^_',
+            destructuredArrayIgnorePattern: '^_',
+            varsIgnorePattern: '^_',
+            ignoreRestSiblings: true,
+          },
+        ],
+        '@typescript-eslint/no-empty-object-type': 'off',
+        '@typescript-eslint/explicit-function-return-type': 'warn',
+        '@typescript-eslint/explicit-module-boundary-types': 'warn',
+      },
+    };
+  }),
   {
+    ignores: [
+      '**/node_modules/',
+      '**/dist/',
+      '**/.git/',
+    ],
+  },
+  {
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
     languageOptions: {
       globals: {
         ...globals.node,
-        ...globals.jest,
+        ...globals.es2021,
       },
-      sourceType: 'commonjs',
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      parser: tseslint.parser,
       parserOptions: {
-        projectService: true,
+        project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
-  },
-  {
     rules: {
-      '@typescript-eslint/no-explicit-any': 'off',
-      '@typescript-eslint/no-floating-promises': 'warn',
-      '@typescript-eslint/no-unsafe-argument': 'warn'
+      'prefer-const': 'error',
+      'no-console': 'warn',
     },
   },
+  eslintConfigPrettier
 );
