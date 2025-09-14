@@ -20,7 +20,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "lint:all": "eslint . --ext .ts --fix",
+    "format:all": "prettier --write \"**/*.{ts,js,json,md,yml,yaml}\"",
+    "validate": "npm run lint:all && npm run format:all"
   },
   "lint-staged": {
     "*.ts": [
