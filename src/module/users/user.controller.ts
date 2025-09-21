@@ -12,7 +12,7 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-import { UserService } from './user.service';
+import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
@@ -23,7 +23,7 @@ import { AuthResponse } from './user.types';
 @ApiTags('users')
 @Controller('users')
 export class UsersController {
-  constructor(private readonly usersService: UserService) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
   @ApiOperation({ summary: 'Регистрация пользователя' })
