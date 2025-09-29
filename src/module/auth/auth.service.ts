@@ -29,7 +29,7 @@ export class AuthService {
             email: user.email,
         };
 
-        const accessToken = this.jwtService.sign(payload, { expiresIn: '14d' });
+        const accessToken = this.jwtService.sign(payload);
 
         return new LoginResponseDto(accessToken, new UserResponseDto(user));
     }
