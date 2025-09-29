@@ -24,9 +24,9 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post('register')
-  @ApiOperation({ summary: 'Регистрация пользователя' })
+  @ApiOperation({ summary: 'Register user' })
   @ApiResponse({ status: 201, type: UserResponseDto })
-  @ApiResponse({ status: 409, description: 'Пользователь уже существует' })
+  @ApiResponse({ status: 409, description: 'User already exists' })
   async register(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.register(createUserDto);
   }
@@ -34,7 +34,7 @@ export class UsersController {
   @Get()
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Получить всех пользователей (только для авторизованных)' })
+  @ApiOperation({ summary: 'Get all users (authorized only)' })
   @ApiResponse({ status: 200, type: [UserResponseDto] })
   async findAll(@Query() filterDto: GetUsersFilterDto) {
     return this.usersService.findAllUsers(filterDto);
@@ -43,7 +43,7 @@ export class UsersController {
   @Get('profile/my')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Получить свой профиль' })
+  @ApiOperation({ summary: 'Get own profile' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   async getMyProfile(@Request() req): Promise<UserResponseDto> {
     return this.usersService.getUserProfile(req.user.userId);
@@ -52,7 +52,7 @@ export class UsersController {
   @Patch('profile/my')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Обновить свой профиль' })
+  @ApiOperation({ summary: 'Update own profile' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   async updateMyProfile(
     @Request() req,
@@ -64,14 +64,14 @@ export class UsersController {
   @Delete('profile/my')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Удалить свой профиль' })
-  @ApiResponse({ status: 200, description: 'Профиль успешно удален' })
+  @ApiOperation({ summary: 'Delete own profile' })
+  @ApiResponse({ status: 200, description: 'Profile removed successfully' })
   async deleteMyProfile(@Request() req): Promise<void> {
     return this.usersService.deleteUser(req.user.userId);
   }
 
   @Get('check-availability')
-  @ApiOperation({ summary: 'Проверить доступность логина и email' })
+  @ApiOperation({ summary: 'Check login/email availability' })
   async checkAvailability(@Query('login') login: string, @Query('email') email: string) {
     return this.usersService.checkUserExists(login, email);
   }

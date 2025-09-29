@@ -1,8 +1,8 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { UserResponseDto } from "src/module/users/dto/user-response.dto";
+import { ApiProperty } from '@nestjs/swagger';
+import { UserResponseDto } from 'src/module/users/dto/user-response.dto';
 
 export class LoginResponseDto {
-  @ApiProperty({ description: 'JWT токе доступа'})
+  @ApiProperty({ description: 'JWT access token' })
   accessToken: string;
 
   @ApiProperty({ type: UserResponseDto })
