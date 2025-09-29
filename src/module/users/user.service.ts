@@ -89,6 +89,13 @@ export class UsersService {
         throw new NotFoundException('User not found');
       }
 
+      if (updateUserDto.login && updateUserDto.login !== user.login) {
+        const loginExists = await this.userRepository.checkLoginExists(updateUserDto.login);
+        if (loginExists) {
+          throw new ConflictException('User with this login already exists');
+        }
+      }
+
       if (updateUserDto.email && updateUserDto.email !== user.email) {
         const emailExists = await this.userRepository.checkEmailExists(updateUserDto.email);
         if (emailExists) {
@@ -96,7 +103,13 @@ export class UsersService {
         }
       }
 
-      await this.userRepository.update(userId, updateUserDto);
+      const updateData: Partial<User> = { ...updateUserDto };
+
+      if (updateUserDto.password) {
+        updateData.password = await bcrypt.hash(updateUserDto.password, 10);
+      }
+
+      await this.userRepository.update(userId, updateData);
       const updatedUser = await this.userRepository.findById(userId);
 
       return new UserResponseDto(updatedUser!);

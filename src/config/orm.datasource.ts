@@ -7,10 +7,10 @@ dotenv.config();
 export default new DataSource({
   type: 'postgres',
   host: process.env.DB_HOST,
-  username: process.env.DB_USERNAME,
+  username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE,
-  port: +process.env.DB_PORT!,
+  database: process.env.DB_NAME,
+  port: Number(process.env.DB_PORT ?? 5432),
   synchronize: true,
   entities: [User],
   migrations: [],
