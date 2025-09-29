@@ -12,6 +12,6 @@ export interface ValidateUserPayload {
     email: string;
 }
 
-export interface AuthRequest extends Request {
+export interface AuthRequest {
     user: ValidateUserPayload;
 }

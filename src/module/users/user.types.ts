@@ -17,17 +17,3 @@ export type UserWhereCondition = {
   email?: string;
   deletedAt?: Date | null;
 };
-
-// TODO: а стоит так делать?
-export { JwtPayload } from
-     '../auth/auth.types';
-export interface AuthResponse {
-  accessToken: string;
-  user: {
-    id: number;
-    login: string;
-    email: string;
-    age: number;
-    description?: string;
-  };
-}

@@ -3,26 +3,20 @@ import {
   ConflictException,
   NotFoundException,
   InternalServerErrorException,
-  UnauthorizedException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { SignInDto } from './dto/sign-in.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { PaginatedResponse, AuthResponse, JwtPayload } from './user.types';
+import { PaginatedResponse } from './user.types';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private userRepository: UserRepository,
-    private jwtService: JwtService
-  ) {}
+  constructor(private userRepository: UserRepository) {}
 
   async register(createUserDto: CreateUserDto): Promise<UserResponseDto> {
     try {
@@ -146,14 +140,6 @@ export class UsersService {
     }
   }
 
-  private createJwtPayload(user: User): JwtPayload {
-    return {
-      userId: user.id,
-      login: user.login,
-      email: user.email,
-    };
-  }
-
   async validateUserById(userId: number): Promise<User> {
     const user = await this.userRepository.findById(userId);
     if (!user) {
@@ -175,16 +161,5 @@ export class UsersService {
       return null;
     }
   }
-
-  async signIn(signInDto: SignInDto): Promise<AuthResponse> {
-    const user = await this.validateCredentials(signInDto.login, signInDto.password );
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-
-    const accessToken = this.jwtService.sign(this.createJwtPayload(user));
-    return { accessToken, user: new UserResponseDto(user)};
-  }
-
 
 }

@@ -16,9 +16,7 @@ import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
-import { SignInDto } from './dto/sign-in.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { AuthResponse } from './user.types';
 
 @ApiTags('users')
 @Controller('users')
@@ -31,14 +29,6 @@ export class UsersController {
   @ApiResponse({ status: 409, description: 'Пользователь уже существует' })
   async register(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
     return this.usersService.register(createUserDto);
-  }
-
-  @Post('signin')
-  @ApiOperation({ summary: 'Вход в систему' })
-  @ApiResponse({ status: 200, description: 'Успешный вход' })
-  @ApiResponse({ status: 401, description: 'Неверные учетные данные' })
-  async signIn(@Body() signInDto: SignInDto): Promise<AuthResponse> {
-    return this.usersService.signIn(signInDto);
   }
 
   @Get()
