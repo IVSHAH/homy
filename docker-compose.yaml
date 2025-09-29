@@ -1,28 +1,4 @@
 services:
-  homy-api:
-    container_name: homy-api
-    image: homy-api
-    restart: unless-stopped
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: development
-    volumes:
-      - ./:/usr/src/app
-      - /usr/src/app/node_modules
-    ports:
-      - '3000:3000'
-    networks:
-      - homy-intranet
-    env_file: 
-      - .env
-    environment:
-      - DB_HOST=postgres
-    depends_on:
-      postgres:
-        condition: service_healthy
-    command: npm run start:dev
-
   postgres:
     container_name: homy-postgres
     image: postgres:16-alpine
