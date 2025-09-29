@@ -2,6 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../../users/user.service';
+import { JwtPayload, ValidateUserPayload } from '../auth.types';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -13,11 +14,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any) {
+  async validate(payload: JwtPayload): Promise<ValidateUserPayload> {
     const user = await this.usersService.validateUserById(payload.userId);
+
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
+    
     return { userId: user.id, login: user.login, email: user.email };
   }
 }

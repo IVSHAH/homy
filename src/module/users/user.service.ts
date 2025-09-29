@@ -43,28 +43,6 @@ export class UsersService {
     }
   }
 
-  async signIn(signInDto: SignInDto): Promise<AuthResponse> {
-    try {
-      const user = await this.userRepository.findByLogin(signInDto.login);
-      if (!user) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      const isPasswordValid = await bcrypt.compare(signInDto.password, user.password);
-      if (!isPasswordValid) {
-        throw new UnauthorizedException('Invalid credentials');
-      }
-
-      const accessToken = this.jwtService.sign(this.createJwtPayload(user));
-      return { accessToken, user: new UserResponseDto(user) };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new InternalServerErrorException('Failed to sign in');
-    }
-  }
-
   async findAllUsers(filterDto: GetUsersFilterDto): Promise<PaginatedResponse<UserResponseDto>> {
     try {
       const { page = 1, limit = 10, loginFilter } = filterDto;
@@ -183,4 +161,30 @@ export class UsersService {
     }
     return user;
   }
+
+  async validateCredentials(login: string, password: string): Promise<User | null> {
+    try {
+      const user = await this.userRepository.findByLogin(login);
+      if (!user) {
+        return null;
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      return isPasswordValid ? user : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async signIn(signInDto: SignInDto): Promise<AuthResponse> {
+    const user = await this.validateCredentials(signInDto.login, signInDto.password );
+    if (!user) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const accessToken = this.jwtService.sign(this.createJwtPayload(user));
+    return { accessToken, user: new UserResponseDto(user)};
+  }
+
+
 }

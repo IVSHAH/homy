@@ -1,0 +1,17 @@
+export interface JwtPayload {
+    userId: number;
+    login: string;
+    email: string;
+    iat?: number;
+    exp?: number;
+}
+
+export interface ValidateUserPayload {
+    userId: number;
+    login: string;
+    email: string;
+}
+
+export interface AuthRequest extends Request {
+    user: ValidateUserPayload;
+}
