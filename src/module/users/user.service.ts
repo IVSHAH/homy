@@ -3,6 +3,8 @@ import {
   ConflictException,
   NotFoundException,
   InternalServerErrorException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 
@@ -13,12 +15,18 @@ import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { PaginatedResponse } from './user.types';
 import { User } from './entities/user.entity';
+import { AuthService } from '../auth/auth.service';
+import { LoginResponseDto } from '../auth/dto/login-response.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private userRepository: UserRepository) {}
+  constructor(
+    private userRepository: UserRepository,
+    @Inject(forwardRef(() => AuthService))
+    private authService: AuthService
+  ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async register(createUserDto: CreateUserDto): Promise<LoginResponseDto> {
     try {
       await this.checkUserUnique(createUserDto.login, createUserDto.email);
 
@@ -28,7 +36,7 @@ export class UsersService {
         password: hashedPassword,
       });
 
-      return new UserResponseDto(user);
+      return this.authService.generateTokensForUser(user);
     } catch (error) {
       if (error instanceof ConflictException) {
         throw error;

@@ -8,7 +8,7 @@ export const databaseOptions = (config: ConfigService): TypeOrmModuleOptions => 
   username: config.get('DB_USER'), 
   password: config.get('DB_PASSWORD'),
   database: config.get('DB_NAME'), 
-  synchronize: true,
+  synchronize: true, 
   autoLoadEntities: true,
   logging: true,
 });

@@ -17,6 +17,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UserResponseDto } from './dto/user-response.dto';
+import { LoginResponseDto } from '../auth/dto/login-response.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -25,9 +26,9 @@ export class UsersController {
 
   @Post('register')
   @ApiOperation({ summary: 'Register user' })
-  @ApiResponse({ status: 201, type: UserResponseDto })
+  @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiResponse({ status: 409, description: 'User already exists' })
-  async register(@Body() createUserDto: CreateUserDto): Promise<UserResponseDto> {
+  async register(@Body() createUserDto: CreateUserDto): Promise<LoginResponseDto> {
     return this.usersService.register(createUserDto);
   }
 

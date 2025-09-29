@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotFoundException, Inject, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/user.service';
 import { SignInDto } from '../users/dto/sign-in.dto';
@@ -14,6 +14,7 @@ export class AuthService {
     private readonly refreshTokenTtlMs = 30 * 24 * 60 * 60 * 1000;
 
     constructor(
+        @Inject(forwardRef(() => UsersService))
         private usersService: UsersService,
         private jwtService: JwtService,
     ) {}
@@ -28,7 +29,7 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials')
         }
 
-        return this.issueTokens(user);
+        return this.generateTokens(user);
     }
 
     async validateUser(payload: JwtPayload): Promise<ValidateUserPayload | null> {
@@ -76,10 +77,14 @@ export class AuthService {
             throw new UnauthorizedException('Refresh token expired');
         }
 
-        return this.issueTokens(user);
+        return this.generateTokens(user);
     }
 
-    private async issueTokens(user: User): Promise<LoginResponseDto> {
+    async generateTokensForUser(user: User): Promise<LoginResponseDto> {
+        return this.generateTokens(user);
+    }
+
+    private async generateTokens(user: User): Promise<LoginResponseDto> {
         const payload = this.createAccessPayload(user);
         const accessToken = this.jwtService.sign(payload);
 
