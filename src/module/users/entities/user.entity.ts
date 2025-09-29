@@ -27,11 +27,18 @@ export class User {
   @Column({ length: 1000, nullable: true })
   description?: string;
 
+  @Column({ nullable: true })
+  refreshTokenHash?: string;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  refreshTokenExpiresAt?: Date;
+
   @CreateDateColumn()
   createdAt: Date;
 
   @UpdateDateColumn()
   updatedAt: Date;
+  
 
   @DeleteDateColumn()
   deletedAt: Date;

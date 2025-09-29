@@ -106,6 +106,7 @@ export class UsersService {
       if (!user) {
         throw new NotFoundException('User not found');
       }
+      await this.userRepository.updateRefreshToken(userId, null, null);
       await this.userRepository.softDelete(userId);
     } catch (error) {
       if (error instanceof NotFoundException) {
@@ -160,6 +161,14 @@ export class UsersService {
     } catch {
       return null;
     }
+  }
+
+  async updateRefreshToken(
+    userId: number,
+    refreshTokenHash: string | null,
+    refreshTokenExpiresAt: Date | null
+  ): Promise<void> {
+    await this.userRepository.updateRefreshToken(userId, refreshTokenHash, refreshTokenExpiresAt);
   }
 
 }

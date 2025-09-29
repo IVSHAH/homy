@@ -54,6 +54,14 @@ export class UserRepository {
     await this.userRepository.update(id, updateData);
   }
 
+  async updateRefreshToken(
+    id: number,
+    refreshTokenHash: string | null,
+    refreshTokenExpiresAt: Date | null
+  ): Promise<void> {
+    await this.userRepository.update(id, { refreshTokenHash, refreshTokenExpiresAt });
+  }
+
   async softDelete(id: number): Promise<void> {
     await this.userRepository.softDelete(id);
   }
