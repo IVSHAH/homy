@@ -25,14 +25,6 @@ Backend-сервис для работы с пользователями: рег
 
 Приложение стартует на `http://localhost:3000`.
 
-### Запуск через Docker
-1. Убедитесь, что `.env` заполнен (как минимум переменные БД и `JWT_SECRET`).
-2. Соберите и поднимите контейнеры: `docker-compose up -d --build`
-   - сервис `homy-api` запустит NestJS с `npm run start:dev`
-   - контейнер `homy-postgres` поднимет PostgreSQL с данными в volume `homy-postgres-data`
-3. Просмотреть логи: `docker-compose logs -f homy-api`
-4. Остановить окружение: `docker-compose down`
-
 ### Swagger
 - Документация доступна по `http://localhost:3000/api/docs`
 - Для авторизации в Swagger используйте JWT токен (кнопка Authorize → Bearer).
