@@ -15,3 +15,9 @@ export interface ValidateUserPayload {
 export interface AuthRequest {
     user: ValidateUserPayload;
 }
+
+export interface AccessTokenPayload {
+    userId: number;
+    login: string;
+    email: string;
+}

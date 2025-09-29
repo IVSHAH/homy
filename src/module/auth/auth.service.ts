@@ -4,7 +4,7 @@ import { UsersService } from '../users/user.service';
 import { SignInDto } from '../users/dto/sign-in.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { UserResponseDto } from '../users/dto/user-response.dto';
-import { JwtPayload, ValidateUserPayload } from './auth.types';
+import { AccessTokenPayload, JwtPayload, ValidateUserPayload } from './auth.types';
 
 @Injectable()
 export class AuthService {
@@ -23,13 +23,13 @@ export class AuthService {
             throw new UnauthorizedException('Invalid credentials')
         }
 
-        const payload: JwtPayload = {
+        const payload: AccessTokenPayload = {
             userId: user.id,
             login: user.login,
-            email: user.email
-        }
+            email: user.email,
+        };
 
-        const accessToken = this.jwtService.sign(payload);
+        const accessToken = this.jwtService.sign(payload, { expiresIn: '14d' });
 
         return new LoginResponseDto(accessToken, new UserResponseDto(user));
     }
@@ -54,4 +54,5 @@ export class AuthService {
             throw error;
         }
     }
+
 }
