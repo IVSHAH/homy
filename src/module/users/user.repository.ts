@@ -59,7 +59,10 @@ export class UserRepository {
     refreshTokenHash: string | null,
     refreshTokenExpiresAt: Date | null
   ): Promise<void> {
-    await this.userRepository.update(id, { refreshTokenHash, refreshTokenExpiresAt });
+    await this.userRepository.update(id, {
+      refreshTokenHash: refreshTokenHash ?? null,
+      refreshTokenExpiresAt: refreshTokenExpiresAt ?? null,
+    });
   }
 
   async softDelete(id: number): Promise<void> {

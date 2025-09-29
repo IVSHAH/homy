@@ -27,11 +27,11 @@ export class User {
   @Column({ length: 1000, nullable: true })
   description?: string;
 
-  @Column({ nullable: true })
-  refreshTokenHash?: string;
+  @Column({ type: 'text', nullable: true })
+  refreshTokenHash: string | null = null;
 
   @Column({ type: 'timestamptz', nullable: true })
-  refreshTokenExpiresAt?: Date;
+  refreshTokenExpiresAt: Date | null = null;
 
   @CreateDateColumn()
   createdAt: Date;

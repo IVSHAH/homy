@@ -5,15 +5,3 @@ export interface PaginatedResponse<T> {
   limit: number;
   totalPages: number;
 }
-
-export interface UserExistsResponse {
-  loginExists: boolean;
-  emailExists: boolean;
-}
-
-export type UserWhereCondition = {
-  id?: number;
-  login?: string;
-  email?: string;
-  deletedAt?: Date | null;
-};
