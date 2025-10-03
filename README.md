@@ -14,14 +14,12 @@ Backend-сервис для работы с пользователями: рег
 - Docker и Docker Compose
 
 ### Настройка окружения
-1. Скопируйте и заполните `.env` (порты, пароли, `JWT_SECRET`).
-   - `cp .env.example .env`
+1. Заполнить `.env`, скопирова содержание из `.env.example` 
 2. Запустите инфраструктуру: `docker-compose up -d`
 3. Установите зависимости: `npm install`
 
 ### Запуск сервиса
 - Development (watch mode): `npm run start:dev`
-- Production build: `npm run build` → `npm run start:prod`
 
 Приложение стартует на `http://localhost:3000`.
 
@@ -29,9 +27,12 @@ Backend-сервис для работы с пользователями: рег
 - Документация доступна по `http://localhost:3000/api/docs`
 - Для авторизации в Swagger используйте JWT токен (кнопка Authorize → Bearer).
 
+### Minio
+ - Вход в минио `http://localhost:9001/login`
+
 ### Полезные команды
 - Линтер: `npm run lint`
-- Тесты: `npm run test`, `npm run test:e2e`, `npm run test:cov`
+- Тесты: `npm run test`
 
 ### Postman
 - Используйте переменную `api = http://localhost:3000` и подставляйте `{{api}}` в URL.
