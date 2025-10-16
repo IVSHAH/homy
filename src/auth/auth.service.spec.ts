@@ -50,14 +50,17 @@ describe('AuthService', () => {
       sign: jest.fn(),
     };
 
-    service = new AuthService(usersService as unknown as UsersService, jwtService as unknown as JwtService);
+    service = new AuthService(
+      usersService as unknown as UsersService,
+      jwtService as unknown as JwtService
+    );
 
-    randomBytesSpy = jest
-      .spyOn(crypto, 'randomBytes')
-      .mockImplementation((((size: number): Buffer => {
-        void size;
-        return Buffer.from('new_refresh_token');
-      }) as unknown) as typeof crypto.randomBytes);
+    randomBytesSpy = jest.spyOn(crypto, 'randomBytes').mockImplementation(((
+      size: number
+    ): Buffer => {
+      void size;
+      return Buffer.from('new_refresh_token');
+    }) as unknown as typeof crypto.randomBytes);
   });
 
   afterEach(() => {
@@ -74,7 +77,9 @@ describe('AuthService', () => {
       const expected = new LoginResponseDto('access', 'refresh', new UserResponseDto(user));
 
       usersService.validateCredentials.mockResolvedValue(user);
-      const generateSpy = jest.spyOn<any, any>(service, 'generateTokens').mockResolvedValue(expected);
+      const generateSpy = jest
+        .spyOn<any, any>(service, 'generateTokens')
+        .mockResolvedValue(expected);
 
       const result = await service.login({ login: 'john', password: 'secret' });
 
@@ -97,7 +102,11 @@ describe('AuthService', () => {
       const user = createUser();
       usersService.validateUserById.mockResolvedValue(user);
 
-      const result = await service.validateUser({ userId: 1, login: 'john', email: 'john@example.com' });
+      const result = await service.validateUser({
+        userId: 1,
+        login: 'john',
+        email: 'john@example.com',
+      });
 
       expect(usersService.validateUserById).toHaveBeenCalledWith(1);
       expect(result).toEqual({ userId: 1, login: 'john', email: 'john@example.com' });
@@ -106,7 +115,11 @@ describe('AuthService', () => {
     it('should return null when user not found', async () => {
       usersService.validateUserById.mockRejectedValue(new NotFoundException());
 
-      const result = await service.validateUser({ userId: 1, login: 'john', email: 'john@example.com' });
+      const result = await service.validateUser({
+        userId: 1,
+        login: 'john',
+        email: 'john@example.com',
+      });
 
       expect(result).toBeNull();
     });
@@ -124,7 +137,10 @@ describe('AuthService', () => {
     const futureDate = (): Date => new Date(Date.now() + 1000 * 60 * 60);
 
     it('should generate new tokens when refresh token valid', async () => {
-      const user = createUser({ refreshTokenHash: 'stored-hash', refreshTokenExpiresAt: futureDate() });
+      const user = createUser({
+        refreshTokenHash: 'stored-hash',
+        refreshTokenExpiresAt: futureDate(),
+      });
       usersService.validateUserById.mockResolvedValue(user);
       mockCompare.mockResolvedValue(true);
       mockHash.mockResolvedValue('new-hash');
@@ -135,7 +151,11 @@ describe('AuthService', () => {
 
       expect(usersService.validateUserById).toHaveBeenCalledWith(1);
       expect(mockCompare).toHaveBeenCalledWith('validtoken', 'stored-hash');
-      expect(jwtService.sign).toHaveBeenCalledWith({ userId: 1, login: 'john', email: 'john@example.com' });
+      expect(jwtService.sign).toHaveBeenCalledWith({
+        userId: 1,
+        login: 'john',
+        email: 'john@example.com',
+      });
       expect(usersService.updateRefreshToken).toHaveBeenCalledWith(1, 'new-hash', expect.any(Date));
       expect(result).toBeInstanceOf(LoginResponseDto);
       expect(result.accessToken).toBe('signed-access');
@@ -154,7 +174,10 @@ describe('AuthService', () => {
     });
 
     it('should throw UnauthorizedException when refresh token mismatched', async () => {
-      const user = createUser({ refreshTokenHash: 'stored-hash', refreshTokenExpiresAt: futureDate() });
+      const user = createUser({
+        refreshTokenHash: 'stored-hash',
+        refreshTokenExpiresAt: futureDate(),
+      });
       usersService.validateUserById.mockResolvedValue(user);
       mockCompare.mockResolvedValue(false);
 
@@ -162,7 +185,10 @@ describe('AuthService', () => {
     });
 
     it('should invalidate expired refresh token and throw UnauthorizedException', async () => {
-      const user = createUser({ refreshTokenHash: 'stored-hash', refreshTokenExpiresAt: new Date(Date.now() - 1000) });
+      const user = createUser({
+        refreshTokenHash: 'stored-hash',
+        refreshTokenExpiresAt: new Date(Date.now() - 1000),
+      });
       usersService.validateUserById.mockResolvedValue(user);
       mockCompare.mockResolvedValue(true);
 

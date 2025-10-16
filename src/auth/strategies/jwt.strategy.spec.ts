@@ -20,7 +20,11 @@ describe('JwtStrategy', () => {
   });
 
   it('should validate payload and return user data', async () => {
-    usersService.validateUserById.mockResolvedValue({ id: 1, login: 'john', email: 'john@example.com' });
+    usersService.validateUserById.mockResolvedValue({
+      id: 1,
+      login: 'john',
+      email: 'john@example.com',
+    });
 
     const result = await strategy.validate({ userId: 1, login: 'john', email: 'john@example.com' });
 

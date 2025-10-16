@@ -191,5 +191,4 @@ export class UsersService {
   ): Promise<void> {
     await this.userRepository.updateRefreshToken(userId, refreshTokenHash, refreshTokenExpiresAt);
   }
-
 }

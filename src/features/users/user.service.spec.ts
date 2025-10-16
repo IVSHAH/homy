@@ -1,8 +1,4 @@
-import {
-  ConflictException,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './user.service';
 import { UserRepository } from './user.repository';
 import { AuthService } from '../auth/auth.service';
@@ -195,7 +191,9 @@ describe('UsersService', () => {
         password: 'newPassword',
       };
 
-      userRepository.findById.mockResolvedValueOnce(existingUser).mockResolvedValueOnce(updatedUser);
+      userRepository.findById
+        .mockResolvedValueOnce(existingUser)
+        .mockResolvedValueOnce(updatedUser);
       userRepository.checkLoginExists.mockResolvedValue(false);
       userRepository.checkEmailExists.mockResolvedValue(false);
       (bcrypt.hash as jest.Mock).mockResolvedValue('newHash');
