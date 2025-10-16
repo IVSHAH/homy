@@ -1,7 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { UnauthorizedException } from '@nestjs/common';
 import { JwtStrategy } from './jwt.strategy';
-import { UsersService } from '../../users/user.service';
+import { UsersService } from '../../features/users/user.service';
 
 describe('JwtStrategy', () => {
   let strategy: JwtStrategy;
