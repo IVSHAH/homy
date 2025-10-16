@@ -1,14 +1,14 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersController } from './user.controller';
 import { UsersService } from './user.service';
-import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { ExecutionContext } from '@nestjs/common';
 
 import { CreateUserDto } from './dto/create-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UserResponseDto } from './dto/user-response.dto';
-import { LoginResponseDto } from '../auth/dto/login-response.dto';
+import { LoginResponseDto } from '../../auth/dto/login-response.dto';
 
 describe('UsersController', () => {
   let controller: UsersController;

@@ -15,8 +15,8 @@ import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { PaginatedResponse } from './user.types';
 import { User } from './entities/user.entity';
-import { AuthService } from '../auth/auth.service';
-import { LoginResponseDto } from '../auth/dto/login-response.dto';
+import { AuthService } from '../../auth/auth.service';
+import { LoginResponseDto } from '../../auth/dto/login-response.dto';
 
 @Injectable()
 export class UsersService {
