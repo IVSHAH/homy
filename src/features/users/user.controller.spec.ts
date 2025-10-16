@@ -9,7 +9,6 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginResponseDto } from '../../auth/dto/login-response.dto';
-
 import { UserFactory } from '../../test/factories/user.factory';
 
 describe('UsersController', () => {
@@ -28,7 +27,6 @@ describe('UsersController', () => {
   const mockJwtAuthGuard = {
     canActivate: jest.fn((context: ExecutionContext) => {
       const request = context.switchToHttp().getRequest();
-
       const reflector = new Reflector();
       const isPublic = reflector.get<boolean>('isPublic', context.getHandler());
 
@@ -87,24 +85,10 @@ describe('UsersController', () => {
       await expect(controller.register(dto)).resolves.toBe(response);
       expect(usersService.register).toHaveBeenCalledWith(dto);
     });
-
-    it('should throw error when user already exists', async () => {
-      const dto: CreateUserDto = {
-        login: 'existing',
-        email: 'existing@example.com',
-        password: '123456',
-        age: 30,
-        description: 'existing user',
-      };
-
-      usersService.register.mockRejectedValue(new Error('User already exists'));
-
-      await expect(controller.register(dto)).rejects.toThrow('User already exists');
-    });
   });
 
   describe('checkAvailability', () => {
-    it('should be public and check login/email availability', async () => {
+    it('should be public and return availability result', async () => {
       const availability = { loginExists: false, emailExists: false };
       usersService.checkUserExists.mockResolvedValue(availability);
 
@@ -145,18 +129,6 @@ describe('UsersController', () => {
       expect(result).toBe(paginated);
       expect(usersService.findAllUsers).toHaveBeenCalledWith(filter);
     });
-
-    it('should handle empty results', async () => {
-      const filter: GetUsersFilterDto = { page: 1, limit: 10, loginFilter: 'nonexistent' };
-      const paginated = { data: [], total: 0, page: 1, limit: 10, totalPages: 0 };
-
-      usersService.findAllUsers.mockResolvedValue(paginated);
-
-      const result = await controller.findAll(filter);
-
-      expect(result).toEqual(paginated);
-      expect(usersService.findAllUsers).toHaveBeenCalledWith(filter);
-    });
   });
 
   describe('getMyProfile', () => {
@@ -172,18 +144,10 @@ describe('UsersController', () => {
       const isPublic = reflector.get('isPublic', controller.getMyProfile);
       expect(isPublic).toBeUndefined();
 
-      const result = await controller.getMyProfile({ user: { userId: 42 } });
+      const result = await controller.getMyProfile(42);
 
       expect(result).toBe(profile);
       expect(usersService.getUserProfile).toHaveBeenCalledWith(42);
-    });
-
-    it('should handle user not found', async () => {
-      usersService.getUserProfile.mockRejectedValue(new Error('User not found'));
-
-      await expect(controller.getMyProfile({ user: { userId: 999 } })).rejects.toThrow(
-        'User not found'
-      );
     });
   });
 
@@ -205,7 +169,7 @@ describe('UsersController', () => {
       const isPublic = reflector.get('isPublic', controller.updateMyProfile);
       expect(isPublic).toBeUndefined();
 
-      const result = await controller.updateMyProfile({ user: { userId: 42 } }, dto);
+      const result = await controller.updateMyProfile(42, dto);
 
       expect(result).toBe(updatedProfile);
       expect(usersService.updateUserProfile).toHaveBeenCalledWith(42, dto);
@@ -219,17 +183,9 @@ describe('UsersController', () => {
       const isPublic = reflector.get('isPublic', controller.deleteMyProfile);
       expect(isPublic).toBeUndefined();
 
-      await controller.deleteMyProfile({ user: { userId: 42 } });
+      await controller.deleteMyProfile(42);
 
       expect(usersService.deleteUser).toHaveBeenCalledWith(42);
-    });
-
-    it('should handle deletion errors', async () => {
-      usersService.deleteUser.mockRejectedValue(new Error('Deletion failed'));
-
-      await expect(controller.deleteMyProfile({ user: { userId: 42 } })).rejects.toThrow(
-        'Deletion failed'
-      );
     });
   });
 

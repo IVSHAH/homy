@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Delete, Query, Request } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Delete, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
 import { UsersService } from './user.service';
@@ -7,6 +7,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { LoginResponseDto } from '../../auth/dto/login-response.dto';
+import { User } from 'src/common/decorators/user.decorator';
+import { PaginatedResponse } from './user.types';
 
 @ApiTags('users')
 @Controller('users')
@@ -26,7 +28,9 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get all users (authorized only)' })
   @ApiResponse({ status: 200, type: [UserResponseDto] })
-  async findAll(@Query() filterDto: GetUsersFilterDto) {
+  async findAll(
+    @Query() filterDto: GetUsersFilterDto
+  ): Promise<PaginatedResponse<UserResponseDto>> {
     return this.usersService.findAllUsers(filterDto);
   }
 
@@ -34,8 +38,8 @@ export class UsersController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get own profile' })
   @ApiResponse({ status: 200, type: UserResponseDto })
-  async getMyProfile(@Request() req): Promise<UserResponseDto> {
-    return this.usersService.getUserProfile(req.user.userId);
+  async getMyProfile(@User('userId') userId: number): Promise<UserResponseDto> {
+    return this.usersService.getUserProfile(userId);
   }
 
   @Patch('profile/my')
@@ -43,18 +47,18 @@ export class UsersController {
   @ApiOperation({ summary: 'Update own profile' })
   @ApiResponse({ status: 200, type: UserResponseDto })
   async updateMyProfile(
-    @Request() req,
+    @User('userId') userId: number,
     @Body() updateUserDto: UpdateUserDto
   ): Promise<UserResponseDto> {
-    return this.usersService.updateUserProfile(req.user.userId, updateUserDto);
+    return this.usersService.updateUserProfile(userId, updateUserDto);
   }
 
   @Delete('profile/my')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Delete own profile' })
   @ApiResponse({ status: 200, description: 'Profile removed successfully' })
-  async deleteMyProfile(@Request() req): Promise<void> {
-    return this.usersService.deleteUser(req.user.userId);
+  async deleteMyProfile(@User('userId') userId: number): Promise<void> {
+    return this.usersService.deleteUser(userId);
   }
 
   @Get('check-availability')
