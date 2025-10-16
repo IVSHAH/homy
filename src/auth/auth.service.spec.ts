@@ -4,10 +4,10 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 
 import { AuthService } from './auth.service';
-import { UsersService } from '../users/user.service';
-import { User } from '../users/entities/user.entity';
+import { UsersService } from '../features/users/user.service';
+import { User } from '../features/users/entities/user.entity';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { UserResponseDto } from '../users/dto/user-response.dto';
+import { UserResponseDto } from '../features/users/dto/user-response.dto';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),

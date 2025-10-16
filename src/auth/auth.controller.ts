@@ -3,7 +3,7 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { AuthService } from './auth.service';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { SignInDto } from '../users/dto/sign-in.dto';
+import { SignInDto } from '../features/users/dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @ApiTags('auth')

@@ -1,10 +1,10 @@
 import { ConflictException, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UsersService } from './user.service';
 import { UserRepository } from './user.repository';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../../auth/auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { User } from './entities/user.entity';
-import { LoginResponseDto } from '../auth/dto/login-response.dto';
+import { LoginResponseDto } from '../../auth/dto/login-response.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';

@@ -6,12 +6,12 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/user.service';
-import { SignInDto } from '../users/dto/sign-in.dto';
+import { UsersService } from '../features/users/user.service';
+import { SignInDto } from '../features/users/dto/sign-in.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
-import { UserResponseDto } from '../users/dto/user-response.dto';
+import { UserResponseDto } from '../features/users/dto/user-response.dto';
 import { AccessTokenPayload, JwtPayload, ValidateUserPayload } from './auth.types';
-import { User } from '../users/entities/user.entity';
+import { User } from '../features/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
 
