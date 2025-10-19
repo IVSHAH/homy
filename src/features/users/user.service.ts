@@ -7,6 +7,7 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { BCRYPT_ROUNDS } from '../../common/constants';
 
 import { UserRepository } from './user.repository';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -31,7 +32,7 @@ export class UsersService {
     try {
       await this.checkUserUnique(createUserDto.login, createUserDto.email);
 
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+      const hashedPassword = await bcrypt.hash(createUserDto.password, BCRYPT_ROUNDS);
       const user = await this.userRepository.create({
         ...createUserDto,
         password: hashedPassword,
@@ -107,7 +108,7 @@ export class UsersService {
       const updateData: Partial<User> = { ...updateUserDto };
 
       if (updateUserDto.password) {
-        updateData.password = await bcrypt.hash(updateUserDto.password, 10);
+        updateData.password = await bcrypt.hash(updateUserDto.password, BCRYPT_ROUNDS);
       }
 
       await this.userRepository.update(userId, updateData);

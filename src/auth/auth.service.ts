@@ -10,15 +10,19 @@ import { UsersService } from '../features/users/user.service';
 import { SignInDto } from '../features/users/dto/sign-in.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { UserResponseDto } from '../features/users/dto/user-response.dto';
-import { AccessTokenPayload, JwtPayload, ValidateUserPayload } from './auth.types';
+import { JwtPayload, ValidateUserPayload } from './auth.types';
 import { User } from '../features/users/entities/user.entity';
 import * as bcrypt from 'bcrypt';
-import { randomBytes } from 'crypto';
+import {
+  generateRefreshToken,
+  parseRefreshToken,
+  isTokenExpired,
+} from '../common/utils/token.utils';
+import { createAccessTokenPayload } from '../common/utils/payload.utils';
+import { REFRESH_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../common/constants';
 
 @Injectable()
 export class AuthService {
-  private readonly refreshTokenTtlMs = 30 * 24 * 60 * 60 * 1000;
-
   constructor(
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
@@ -57,7 +61,7 @@ export class AuthService {
   }
 
   async refresh(refreshToken: string): Promise<LoginResponseDto> {
-    const { userId, tokenPart } = this.parseRefreshToken(refreshToken);
+    const { userId, tokenPart } = parseRefreshToken(refreshToken);
 
     let user: User;
     try {
@@ -75,7 +79,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    if (user.refreshTokenExpiresAt.getTime() < Date.now()) {
+    if (isTokenExpired(user.refreshTokenExpiresAt)) {
       await this.usersService.updateRefreshToken(user.id, null, null);
       throw new UnauthorizedException('Refresh token expired');
     }
@@ -88,28 +92,13 @@ export class AuthService {
   }
 
   private async generateTokens(user: User): Promise<LoginResponseDto> {
-    const payload = this.createAccessPayload(user);
+    const payload = createAccessTokenPayload(user);
     const accessToken = this.jwtService.sign(payload);
 
-    const { token, rawToken, expiresAt } = this.generateRefreshToken(user);
+    const { token, rawToken, expiresAt } = generateRefreshToken(user.id, REFRESH_TOKEN_TTL_MS);
     await this.persistRefreshToken(user.id, rawToken, expiresAt);
 
     return new LoginResponseDto(accessToken, token, new UserResponseDto(user));
-  }
-
-  private createAccessPayload(user: User): AccessTokenPayload {
-    return {
-      userId: user.id,
-      login: user.login,
-      email: user.email,
-    };
-  }
-
-  private generateRefreshToken(user: User): { token: string; rawToken: string; expiresAt: Date } {
-    const rawToken = randomBytes(32).toString('hex');
-    const token = `${user.id}.${rawToken}`;
-    const expiresAt = new Date(Date.now() + this.refreshTokenTtlMs);
-    return { token, rawToken, expiresAt };
   }
 
   private async persistRefreshToken(
@@ -117,21 +106,7 @@ export class AuthService {
     rawToken: string,
     expiresAt: Date
   ): Promise<void> {
-    const hash = await bcrypt.hash(rawToken, 10);
+    const hash = await bcrypt.hash(rawToken, BCRYPT_ROUNDS);
     await this.usersService.updateRefreshToken(userId, hash, expiresAt);
-  }
-
-  private parseRefreshToken(refreshToken: string): { userId: number; tokenPart: string } {
-    const [userIdPart, tokenPart] = refreshToken.split('.');
-    if (!userIdPart || !tokenPart) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    const userId = Number(userIdPart);
-    if (!Number.isInteger(userId)) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-
-    return { userId, tokenPart };
   }
 }

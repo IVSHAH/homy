@@ -3,11 +3,11 @@ import { UsersService } from './user.service';
 import { UserRepository } from './user.repository';
 import { AuthService } from '../../auth/auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { User } from './entities/user.entity';
 import { LoginResponseDto } from '../../auth/dto/login-response.dto';
 import { UserResponseDto } from './dto/user-response.dto';
 import { GetUsersFilterDto } from './dto/get-users-filter.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserFactory } from '../../test/factories';
 
 jest.mock('bcrypt', () => ({
   hash: jest.fn(),
@@ -33,20 +33,7 @@ describe('UsersService', () => {
   };
   let authService: { generateTokensForUser: jest.Mock };
 
-  const mockUser = (overrides: Partial<User> = {}): User => ({
-    id: 1,
-    login: 'john',
-    email: 'john@example.com',
-    password: 'hashed',
-    age: 30,
-    description: 'about me',
-    refreshTokenHash: null,
-    refreshTokenExpiresAt: null,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    deletedAt: null as unknown as Date,
-    ...overrides,
-  });
+  // Используем UserFactory вместо локального mockUser
 
   beforeEach(() => {
     userRepository = {
@@ -85,7 +72,7 @@ describe('UsersService', () => {
         age: 30,
         description: 'about',
       };
-      const createdUser = mockUser();
+      const createdUser = UserFactory.create({ login: 'john', email: 'john@example.com', age: 30 });
       const response = new LoginResponseDto('access', 'refresh', new UserResponseDto(createdUser));
 
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashedPassword');
@@ -140,7 +127,7 @@ describe('UsersService', () => {
 
   describe('findAllUsers', () => {
     it('should return paginated users', async () => {
-      const user = mockUser();
+      const user = UserFactory.create();
       const filter: GetUsersFilterDto = { page: 2, limit: 5, loginFilter: 'jo' };
 
       userRepository.findWithPagination.mockResolvedValue({ users: [user], total: 6 });
@@ -166,7 +153,7 @@ describe('UsersService', () => {
 
   describe('getUserProfile', () => {
     it('should return user profile when found', async () => {
-      const user = mockUser();
+      const user = UserFactory.create();
       userRepository.findById.mockResolvedValue(user);
 
       const result = await service.getUserProfile(1);
@@ -184,8 +171,8 @@ describe('UsersService', () => {
 
   describe('updateUserProfile', () => {
     it('should update profile and hash password when provided', async () => {
-      const existingUser = mockUser();
-      const updatedUser = mockUser({ password: 'new-hash', email: 'new@example.com' });
+      const existingUser = UserFactory.create();
+      const updatedUser = UserFactory.create({ password: 'new-hash', email: 'new@example.com' });
       const dto: UpdateUserDto = {
         email: 'new@example.com',
         password: 'newPassword',
@@ -209,7 +196,7 @@ describe('UsersService', () => {
     });
 
     it('should throw ConflictException if new login already exists', async () => {
-      const existingUser = mockUser();
+      const existingUser = UserFactory.create();
       userRepository.findById.mockResolvedValue(existingUser);
       userRepository.checkLoginExists.mockResolvedValue(true);
 
@@ -230,7 +217,7 @@ describe('UsersService', () => {
 
   describe('deleteUser', () => {
     it('should nullify refresh token and soft delete user', async () => {
-      const user = mockUser();
+      const user = UserFactory.create();
       userRepository.findById.mockResolvedValue(user);
 
       await service.deleteUser(user.id);
@@ -248,7 +235,7 @@ describe('UsersService', () => {
 
   describe('validateCredentials', () => {
     it('should return user when password matches', async () => {
-      const user = mockUser();
+      const user = UserFactory.create({ login: 'john' });
       userRepository.findByLogin.mockResolvedValue(user);
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
@@ -259,7 +246,7 @@ describe('UsersService', () => {
     });
 
     it('should return null when password mismatch', async () => {
-      const user = mockUser();
+      const user = UserFactory.create();
       userRepository.findByLogin.mockResolvedValue(user);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
