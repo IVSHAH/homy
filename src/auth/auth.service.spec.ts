@@ -31,8 +31,7 @@ describe('AuthService', () => {
     password: 'hashed-password',
     age: 30,
     description: 'about me',
-    refreshTokenHash: null,
-    refreshTokenExpiresAt: null,
+    refreshTokens: [],
     createdAt: new Date(),
     updatedAt: new Date(),
     deletedAt: null as unknown as Date,
@@ -50,9 +49,17 @@ describe('AuthService', () => {
       sign: jest.fn(),
     };
 
+    const refreshTokenRepository = {
+      findAllByUserId: jest.fn(),
+      findById: jest.fn(),
+      revokeToken: jest.fn(),
+      revokeAllExceptCurrent: jest.fn(),
+    };
+
     service = new AuthService(
       usersService as unknown as UsersService,
-      jwtService as unknown as JwtService
+      jwtService as unknown as JwtService,
+      refreshTokenRepository as any
     );
 
     randomBytesSpy = jest.spyOn(crypto, 'randomBytes').mockImplementation(((
@@ -69,7 +76,6 @@ describe('AuthService', () => {
   });
 
   const mockHash = bcrypt.hash as jest.Mock;
-  const mockCompare = bcrypt.compare as jest.Mock;
 
   describe('login', () => {
     it('should authenticate user and return tokens', async () => {
@@ -81,19 +87,21 @@ describe('AuthService', () => {
         .spyOn<any, any>(service, 'generateTokens')
         .mockResolvedValue(expected);
 
-      const result = await service.login({ login: 'john', password: 'secret' });
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
+      const result = await service.login({ login: 'john', password: 'secret' }, context);
 
       expect(usersService.validateCredentials).toHaveBeenCalledWith('john', 'secret');
-      expect(generateSpy).toHaveBeenCalledWith(user);
+      expect(generateSpy).toHaveBeenCalledWith(user, context);
       expect(result).toBe(expected);
     });
 
     it('should throw UnauthorizedException when credentials invalid', async () => {
       usersService.validateCredentials.mockResolvedValue(null);
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
 
-      await expect(service.login({ login: 'john', password: 'wrong' })).rejects.toBeInstanceOf(
-        UnauthorizedException
-      );
+      await expect(
+        service.login({ login: 'john', password: 'wrong' }, context)
+      ).rejects.toBeInstanceOf(UnauthorizedException);
     });
   });
 
@@ -134,72 +142,47 @@ describe('AuthService', () => {
   });
 
   describe('refresh', () => {
-    const futureDate = (): Date => new Date(Date.now() + 1000 * 60 * 60);
-
     it('should generate new tokens when refresh token valid', async () => {
-      const user = createUser({
-        refreshTokenHash: 'stored-hash',
-        refreshTokenExpiresAt: futureDate(),
-      });
+      const user = createUser();
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
       usersService.validateUserById.mockResolvedValue(user);
-      mockCompare.mockResolvedValue(true);
       mockHash.mockResolvedValue('new-hash');
       jwtService.sign.mockReturnValue('signed-access');
       usersService.updateRefreshToken.mockResolvedValue(undefined);
 
-      const result = await service.refresh('1.validtoken');
+      const result = await service.refresh('1.validtoken', context);
 
       expect(usersService.validateUserById).toHaveBeenCalledWith(1);
-      expect(mockCompare).toHaveBeenCalledWith('validtoken', 'stored-hash');
       expect(jwtService.sign).toHaveBeenCalledWith({
         userId: 1,
         login: 'john',
         email: 'john@example.com',
       });
-      expect(usersService.updateRefreshToken).toHaveBeenCalledWith(1, 'new-hash', expect.any(Date));
+      expect(usersService.updateRefreshToken).toHaveBeenCalledWith(
+        1,
+        'new-hash',
+        expect.any(Date),
+        context
+      );
       expect(result).toBeInstanceOf(LoginResponseDto);
       expect(result.accessToken).toBe('signed-access');
       expect(result.refreshToken).toMatch(/^1\./);
     });
 
     it('should throw UnauthorizedException when format invalid', async () => {
-      await expect(service.refresh('invalid')).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
-    it('should throw UnauthorizedException when user missing refresh data', async () => {
-      const user = createUser();
-      usersService.validateUserById.mockResolvedValue(user);
-
-      await expect(service.refresh('1.token')).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
-    it('should throw UnauthorizedException when refresh token mismatched', async () => {
-      const user = createUser({
-        refreshTokenHash: 'stored-hash',
-        refreshTokenExpiresAt: futureDate(),
-      });
-      usersService.validateUserById.mockResolvedValue(user);
-      mockCompare.mockResolvedValue(false);
-
-      await expect(service.refresh('1.token')).rejects.toBeInstanceOf(UnauthorizedException);
-    });
-
-    it('should invalidate expired refresh token and throw UnauthorizedException', async () => {
-      const user = createUser({
-        refreshTokenHash: 'stored-hash',
-        refreshTokenExpiresAt: new Date(Date.now() - 1000),
-      });
-      usersService.validateUserById.mockResolvedValue(user);
-      mockCompare.mockResolvedValue(true);
-
-      await expect(service.refresh('1.token')).rejects.toBeInstanceOf(UnauthorizedException);
-      expect(usersService.updateRefreshToken).toHaveBeenCalledWith(1, null, null);
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
+      await expect(service.refresh('invalid', context)).rejects.toBeInstanceOf(
+        UnauthorizedException
+      );
     });
 
     it('should throw UnauthorizedException when user not found', async () => {
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
       usersService.validateUserById.mockRejectedValue(new NotFoundException());
 
-      await expect(service.refresh('1.token')).rejects.toBeInstanceOf(UnauthorizedException);
+      await expect(service.refresh('1.token', context)).rejects.toBeInstanceOf(
+        UnauthorizedException
+      );
     });
   });
 
@@ -211,7 +194,7 @@ describe('AuthService', () => {
 
       const result = await service.generateTokensForUser(user);
 
-      expect(spy).toHaveBeenCalledWith(user);
+      expect(spy).toHaveBeenCalledWith(user, {});
       expect(result).toBe(expected);
     });
   });

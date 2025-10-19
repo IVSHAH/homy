@@ -1,10 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
-
-import { AuthService } from './auth.service';
-import { LoginResponseDto } from './dto/login-response.dto';
+import { Controller, Post, Body, Get, Delete, Param, ParseIntPipe } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Context } from '../common/decorators/context.decorator';
+import { RequestContext } from '../common/interfaces/request-context.interface';
+import { User } from '../common/decorators/user.decorator';
 import { SignInDto } from '../features/users/dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
+import { LoginResponseDto } from './dto/login-response.dto';
+import { SessionResponseDto } from './dto/session-response.dto';
+import { RevokeSessionsDto } from './dto/revoke-sessions.dto';
+import { AuthService } from './auth.service';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -12,18 +16,55 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('login')
-  @ApiOperation({ summary: 'User authentication' })
+  @ApiOperation({ summary: 'Login user' })
   @ApiResponse({ status: 200, type: LoginResponseDto })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
-  async login(@Body() signInDto: SignInDto): Promise<LoginResponseDto> {
-    return this.authService.login(signInDto);
+  async login(
+    @Body() signInDto: SignInDto,
+    @Context() context: RequestContext
+  ): Promise<LoginResponseDto> {
+    return this.authService.login(signInDto, context);
   }
 
   @Post('refresh')
   @ApiOperation({ summary: 'Refresh access token' })
   @ApiResponse({ status: 200, type: LoginResponseDto })
   @ApiResponse({ status: 401, description: 'Invalid refresh token' })
-  async refresh(@Body() refreshTokenDto: RefreshTokenDto): Promise<LoginResponseDto> {
-    return this.authService.refresh(refreshTokenDto.refreshToken);
+  async refresh(
+    @Body() refreshTokenDto: RefreshTokenDto,
+    @Context() context: RequestContext
+  ): Promise<LoginResponseDto> {
+    return this.authService.refresh(refreshTokenDto.refreshToken, context);
+  }
+
+  @Get('sessions')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get all active sessions for current user' })
+  @ApiResponse({ status: 200, type: [SessionResponseDto] })
+  async getSessions(@User('userId') userId: number): Promise<SessionResponseDto[]> {
+    return this.authService.getUserSessions(userId);
+  }
+
+  @Delete('sessions/:sessionId')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke a specific session' })
+  @ApiResponse({ status: 200, description: 'Session revoked successfully' })
+  @ApiResponse({ status: 403, description: 'Cannot revoke this session' })
+  async revokeSession(
+    @User('userId') userId: number,
+    @Param('sessionId', ParseIntPipe) sessionId: number
+  ): Promise<void> {
+    return this.authService.revokeSession(userId, sessionId);
+  }
+
+  @Delete('sessions')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Revoke all sessions except current' })
+  @ApiResponse({ status: 200, description: 'All sessions except current revoked successfully' })
+  async revokeAllSessions(
+    @User('userId') userId: number,
+    @Body() dto: RevokeSessionsDto
+  ): Promise<void> {
+    return this.authService.revokeAllSessions(userId, dto.currentTokenId);
   }
 }

@@ -11,6 +11,8 @@ import { User } from 'src/common/decorators/user.decorator';
 import { PaginatedResponse } from './user.types';
 import { CheckAvailabilityDto } from './dto/check-availability.dto';
 import { CheckAvailabilityResponseDto } from './dto/check-availability-response.dto';
+import { Context } from '../../common/decorators/context.decorator';
+import { RequestContext } from '../../common/interfaces/request-context.interface';
 
 @ApiTags('users')
 @Controller('users')
@@ -22,8 +24,11 @@ export class UsersController {
   @ApiOperation({ summary: 'Register user' })
   @ApiResponse({ status: 201, type: LoginResponseDto })
   @ApiResponse({ status: 409, description: 'User already exists' })
-  async register(@Body() createUserDto: CreateUserDto): Promise<LoginResponseDto> {
-    return this.usersService.register(createUserDto);
+  async register(
+    @Body() createUserDto: CreateUserDto,
+    @Context() context: RequestContext
+  ): Promise<LoginResponseDto> {
+    return this.usersService.register(createUserDto, context);
   }
 
   @Get()

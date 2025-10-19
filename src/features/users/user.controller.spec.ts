@@ -82,8 +82,9 @@ describe('UsersController', () => {
       const isPublic = reflector.get('isPublic', controller.register);
       expect(isPublic).toBe(true);
 
-      await expect(controller.register(dto)).resolves.toBe(response);
-      expect(usersService.register).toHaveBeenCalledWith(dto);
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test-agent' };
+      await expect(controller.register(dto, context)).resolves.toBe(response);
+      expect(usersService.register).toHaveBeenCalledWith(dto, context);
     });
   });
 

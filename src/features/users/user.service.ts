@@ -18,6 +18,7 @@ import { PaginatedResponse } from './user.types';
 import { User } from './entities/user.entity';
 import { AuthService } from '../../auth/auth.service';
 import { LoginResponseDto } from '../../auth/dto/login-response.dto';
+import { RequestContext } from '../../common/interfaces/request-context.interface';
 import { CheckAvailabilityResponseDto } from './dto/check-availability-response.dto';
 
 @Injectable()
@@ -28,7 +29,10 @@ export class UsersService {
     private authService: AuthService
   ) {}
 
-  async register(createUserDto: CreateUserDto): Promise<LoginResponseDto> {
+  async register(
+    createUserDto: CreateUserDto,
+    context?: RequestContext
+  ): Promise<LoginResponseDto> {
     try {
       await this.checkUserUnique(createUserDto.login, createUserDto.email);
 
@@ -38,7 +42,7 @@ export class UsersService {
         password: hashedPassword,
       });
 
-      return this.authService.generateTokensForUser(user);
+      return this.authService.generateTokensForUser(user, context);
     } catch (error) {
       if (error instanceof ConflictException) {
         throw error;
@@ -186,8 +190,14 @@ export class UsersService {
   async updateRefreshToken(
     userId: number,
     refreshTokenHash: string | null,
-    refreshTokenExpiresAt: Date | null
+    refreshTokenExpiresAt: Date | null,
+    context?: RequestContext
   ): Promise<void> {
-    await this.userRepository.updateRefreshToken(userId, refreshTokenHash, refreshTokenExpiresAt);
+    await this.userRepository.updateRefreshToken(
+      userId,
+      refreshTokenHash,
+      refreshTokenExpiresAt,
+      context
+    );
   }
 }

@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, IsNull, SelectQueryBuilder } from 'typeorm';
 import { User } from './entities/user.entity';
+import { RequestContext } from '../../common/interfaces/request-context.interface';
+import { RefreshTokenRepository } from '../../auth/refresh-token.repository';
 
 @Injectable()
 export class UserRepository {
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>
+    private readonly userRepository: Repository<User>,
+    private readonly refreshTokenRepository: RefreshTokenRepository
   ) {}
 
   async create(userData: Partial<User>): Promise<User> {
@@ -57,12 +60,20 @@ export class UserRepository {
   async updateRefreshToken(
     id: number,
     refreshTokenHash: string | null,
-    refreshTokenExpiresAt: Date | null
+    refreshTokenExpiresAt: Date | null,
+    context?: RequestContext
   ): Promise<void> {
-    await this.userRepository.update(id, {
-      refreshTokenHash: refreshTokenHash ?? null,
-      refreshTokenExpiresAt: refreshTokenExpiresAt ?? null,
-    });
+    if (refreshTokenHash && refreshTokenExpiresAt) {
+      await this.refreshTokenRepository.create({
+        userId: id,
+        tokenHash: refreshTokenHash,
+        expiresAt: refreshTokenExpiresAt,
+        ipAddress: context?.ipAddress,
+        userAgent: context?.userAgent,
+      });
+    } else {
+      await this.refreshTokenRepository.revokeAllUserTokens(id);
+    }
   }
 
   async softDelete(id: number): Promise<void> {

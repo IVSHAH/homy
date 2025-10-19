@@ -5,7 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToMany,
 } from 'typeorm';
+import { RefreshToken } from '../../../auth/entities/refresh-token.entity';
 
 @Entity()
 export class User {
@@ -27,12 +29,6 @@ export class User {
   @Column({ length: 1000, nullable: true })
   description?: string;
 
-  @Column({ type: 'text', nullable: true })
-  refreshTokenHash: string | null = null;
-
-  @Column({ type: 'timestamptz', nullable: true })
-  refreshTokenExpiresAt: Date | null = null;
-
   @CreateDateColumn()
   createdAt: Date;
 
@@ -41,4 +37,7 @@ export class User {
 
   @DeleteDateColumn()
   deletedAt: Date;
+
+  @OneToMany(() => RefreshToken, (token: RefreshToken) => token.user)
+  refreshTokens: RefreshToken[];
 }

@@ -30,22 +30,24 @@ describe('AuthController', () => {
   describe('login', () => {
     it('should delegate to authService.login', async () => {
       const dto: SignInDto = { login: 'john', password: 'secret' };
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
       const response = new LoginResponseDto('access', 'refresh', {} as UserResponseDto);
       authService.login.mockResolvedValue(response);
 
-      await expect(controller.login(dto)).resolves.toBe(response);
-      expect(authService.login).toHaveBeenCalledWith(dto);
+      await expect(controller.login(dto, context)).resolves.toBe(response);
+      expect(authService.login).toHaveBeenCalledWith(dto, context);
     });
   });
 
   describe('refresh', () => {
     it('should delegate to authService.refresh', async () => {
       const dto: RefreshTokenDto = { refreshToken: 'token' };
+      const context = { ipAddress: '127.0.0.1', userAgent: 'test' };
       const response = new LoginResponseDto('access2', 'refresh2', {} as UserResponseDto);
       authService.refresh.mockResolvedValue(response);
 
-      await expect(controller.refresh(dto)).resolves.toBe(response);
-      expect(authService.refresh).toHaveBeenCalledWith('token');
+      await expect(controller.refresh(dto, context)).resolves.toBe(response);
+      expect(authService.refresh).toHaveBeenCalledWith('token', context);
     });
   });
 });
