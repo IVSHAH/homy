@@ -95,7 +95,10 @@ describe('UsersController', () => {
       const isPublic = reflector.get('isPublic', controller.checkAvailability);
       expect(isPublic).toBe(true);
 
-      const result = await controller.checkAvailability('newuser', 'new@example.com');
+      const result = await controller.checkAvailability({
+        login: 'newuser',
+        email: 'new@example.com',
+      });
 
       expect(result).toEqual(availability);
       expect(usersService.checkUserExists).toHaveBeenCalledWith('newuser', 'new@example.com');

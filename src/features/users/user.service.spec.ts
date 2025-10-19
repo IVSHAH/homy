@@ -33,8 +33,6 @@ describe('UsersService', () => {
   };
   let authService: { generateTokensForUser: jest.Mock };
 
-  // Используем UserFactory вместо локального mockUser
-
   beforeEach(() => {
     userRepository = {
       create: jest.fn(),

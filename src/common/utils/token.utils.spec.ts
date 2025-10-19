@@ -5,7 +5,7 @@ describe('Token Utils', () => {
   describe('generateRefreshToken', () => {
     it('should generate refresh token with correct format', () => {
       const userId = 123;
-      const ttlMs = 30 * 24 * 60 * 60 * 1000; // 30 days
+      const ttlMs = 30 * 24 * 60 * 60 * 1000;
 
       const result = generateRefreshToken(userId, ttlMs);
 
@@ -27,7 +27,7 @@ describe('Token Utils', () => {
 
     it('should set correct expiration date', () => {
       const userId = 1;
-      const ttlMs = 5000; // 5 seconds
+      const ttlMs = 5000;
       const beforeGeneration = Date.now();
 
       const result = generateRefreshToken(userId, ttlMs);
@@ -77,7 +77,6 @@ describe('Token Utils', () => {
     });
 
     it('should parse token with multiple dots correctly', () => {
-      // Token может содержать несколько точек - парсим только первую часть как userId
       const token = '123.45.tokenpart';
 
       const result = parseRefreshToken(token);
@@ -89,7 +88,7 @@ describe('Token Utils', () => {
 
   describe('isTokenExpired', () => {
     it('should return true for expired token', () => {
-      const expiredDate = new Date(Date.now() - 1000); // 1 second ago
+      const expiredDate = new Date(Date.now() - 1000);
 
       const result = isTokenExpired(expiredDate);
 
@@ -97,7 +96,7 @@ describe('Token Utils', () => {
     });
 
     it('should return false for valid token', () => {
-      const validDate = new Date(Date.now() + 1000); // 1 second in future
+      const validDate = new Date(Date.now() + 1000);
 
       const result = isTokenExpired(validDate);
 
