@@ -4,6 +4,16 @@ import { CreateUserDto } from './create-user.dto';
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @ApiProperty({
+    description: 'User login',
+    example: 'new_login',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Length(3, 50)
+  login?: string;
+
+  @ApiProperty({
     description: 'User email',
     example: 'new_email@example.com',
     required: false,
@@ -11,6 +21,16 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsOptional()
   @IsEmail()
   email?: string;
+
+  @ApiProperty({
+    description: 'User password',
+    example: 'newSecurePassword123',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  @Length(6, 100)
+  password?: string;
 
   @ApiProperty({ description: 'User age', example: 26, required: false })
   @IsOptional()

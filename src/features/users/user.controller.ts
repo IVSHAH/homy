@@ -9,6 +9,8 @@ import { UserResponseDto } from './dto/user-response.dto';
 import { LoginResponseDto } from '../../auth/dto/login-response.dto';
 import { User } from 'src/common/decorators/user.decorator';
 import { PaginatedResponse } from './user.types';
+import { CheckAvailabilityDto } from './dto/check-availability.dto';
+import { CheckAvailabilityResponseDto } from './dto/check-availability-response.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -64,7 +66,10 @@ export class UsersController {
   @Get('check-availability')
   @Public()
   @ApiOperation({ summary: 'Check login/email availability' })
-  async checkAvailability(@Query('login') login: string, @Query('email') email: string) {
-    return this.usersService.checkUserExists(login, email);
+  @ApiResponse({ status: 200, type: CheckAvailabilityResponseDto })
+  async checkAvailability(
+    @Query() dto: CheckAvailabilityDto
+  ): Promise<CheckAvailabilityResponseDto> {
+    return this.usersService.checkUserExists(dto.login, dto.email);
   }
 }

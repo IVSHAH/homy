@@ -17,6 +17,7 @@ import { PaginatedResponse } from './user.types';
 import { User } from './entities/user.entity';
 import { AuthService } from '../../auth/auth.service';
 import { LoginResponseDto } from '../../auth/dto/login-response.dto';
+import { CheckAvailabilityResponseDto } from './dto/check-availability-response.dto';
 
 @Injectable()
 export class UsersService {
@@ -137,15 +138,12 @@ export class UsersService {
     }
   }
 
-  async checkUserExists(
-    login: string,
-    email: string
-  ): Promise<{ loginExists: boolean; emailExists: boolean }> {
+  async checkUserExists(login?: string, email?: string): Promise<CheckAvailabilityResponseDto> {
     try {
-      const loginExists = await this.userRepository.checkLoginExists(login);
-      const emailExists = await this.userRepository.checkEmailExists(email);
+      const loginExists = login ? await this.userRepository.checkLoginExists(login) : false;
+      const emailExists = email ? await this.userRepository.checkEmailExists(email) : false;
 
-      return { loginExists, emailExists };
+      return new CheckAvailabilityResponseDto(loginExists, emailExists);
     } catch {
       throw new InternalServerErrorException('Failed to check user existence');
     }

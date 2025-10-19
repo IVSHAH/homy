@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, Max } from 'class-validator';
 
 export class GetUsersFilterDto {
   @ApiProperty({ description: 'Filter by login', example: 'john', required: false })
@@ -17,5 +17,6 @@ export class GetUsersFilterDto {
   @IsOptional()
   @IsInt()
   @Min(1)
+  @Max(100)
   limit?: number = 10;
 }
