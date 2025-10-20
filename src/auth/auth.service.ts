@@ -22,7 +22,7 @@ import { REFRESH_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../common/constants';
 import { RequestContext } from '../common/interfaces/request-context.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
 import { EmailTransportService } from '../common/interfaces/email-transport.interface';
-import { verifyEmailTemplate } from '../mail/templates/verify-email.template';
+import { verifyEmailTemplate } from '../providers/mail/templates/verify-email.template';
 
 @Injectable()
 export class AuthService {
