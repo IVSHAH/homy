@@ -16,10 +16,12 @@ export class NodemailerService extends EmailTransportService {
       this.logger.warn('MAIL_USER or MAIL_PASSWORD not set - emails will not be sent');
     }
 
+    const port = parseInt(process.env.MAIL_PORT || '587');
+
     this.transporter = nodemailer.createTransport({
       host: process.env.MAIL_HOST,
-      port: parseInt(process.env.MAIL_PORT || '587'),
-      secure: false, // true для 465, false для других портов
+      port: port,
+      secure: port === 465, // true для 465, false для других портов
       auth: {
         user: process.env.MAIL_USER,
         pass: process.env.MAIL_PASSWORD,
