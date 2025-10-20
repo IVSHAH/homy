@@ -1,6 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Delete, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { Public } from '../../common/decorators/public.decorator';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/role.enum';
 import { UsersService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -33,8 +35,10 @@ export class UsersController {
 
   @Get()
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Get all users (authorized only)' })
+  @Roles(Role.ADMIN)
+  @ApiOperation({ summary: 'Get all users (admin only)' })
   @ApiResponse({ status: 200, type: [UserResponseDto] })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin role required' })
   async findAll(
     @Query() filterDto: GetUsersFilterDto
   ): Promise<PaginatedResponse<UserResponseDto>> {

@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
   Inject,
   forwardRef,
 } from '@nestjs/common';
@@ -20,6 +21,8 @@ import { createAccessTokenPayload } from '../common/utils/payload.utils';
 import { REFRESH_TOKEN_TTL_MS, BCRYPT_ROUNDS } from '../common/constants';
 import { RequestContext } from '../common/interfaces/request-context.interface';
 import { RefreshTokenRepository } from './refresh-token.repository';
+import { EmailTransportService } from '../common/interfaces/email-transport.interface';
+import { verifyEmailTemplate } from '../mail/templates/verify-email.template';
 
 @Injectable()
 export class AuthService {
@@ -27,7 +30,8 @@ export class AuthService {
     @Inject(forwardRef(() => UsersService))
     private usersService: UsersService,
     private jwtService: JwtService,
-    private refreshTokenRepository: RefreshTokenRepository
+    private refreshTokenRepository: RefreshTokenRepository,
+    private emailService: EmailTransportService
   ) {}
 
   async login(signInDto: SignInDto, context: RequestContext): Promise<LoginResponseDto> {
@@ -37,7 +41,69 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    if (!user.isVerified) {
+      throw new UnauthorizedException('Please verify your email before logging in');
+    }
+
     return this.generateTokens(user, context);
+  }
+
+  private generateVerificationCode(): { code: string; expires: Date } {
+    // Generate 6-digit OTP code
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expires = new Date();
+    expires.setMinutes(expires.getMinutes() + 15); // OTP expires in 15 minutes
+    return { code, expires };
+  }
+
+  async sendVerificationEmail(user: User): Promise<void> {
+    const { code, expires } = this.generateVerificationCode();
+
+    await this.usersService.updateVerificationToken(user.id, code, expires);
+
+    const emailHtml = verifyEmailTemplate(code);
+
+    await this.emailService.sendMail(user.email, 'Verify your email', emailHtml);
+  }
+
+  async verifyEmail(email: string, code: string): Promise<{ message: string }> {
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isVerified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    if (!user.verificationToken || user.verificationToken !== code) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    if (!user.verificationTokenExpires || user.verificationTokenExpires < new Date()) {
+      throw new BadRequestException('Verification code has expired');
+    }
+
+    await this.usersService.markAsVerified(user.id);
+
+    return { message: 'Email verified successfully' };
+  }
+
+  async resendVerification(email: string): Promise<{ message: string }> {
+    const user = await this.usersService.findByEmail(email);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.isVerified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    await this.sendVerificationEmail(user);
+
+    return { message: 'Verification email sent' };
   }
 
   async validateUser(payload: JwtPayload): Promise<ValidateUserPayload | null> {
@@ -52,6 +118,7 @@ export class AuthService {
         userId: user.id,
         login: user.login,
         email: user.email,
+        role: user.role,
       };
     } catch (error) {
       if (error instanceof NotFoundException) {

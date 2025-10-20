@@ -40,7 +40,16 @@ export class UsersService {
       const user = await this.userRepository.create({
         ...createUserDto,
         password: hashedPassword,
+        isVerified: false,
       });
+
+      // Отправка письма верификации (не блокирует регистрацию при ошибке)
+      try {
+        await this.authService.sendVerificationEmail(user);
+      } catch (emailError) {
+        console.error('Failed to send verification email:', emailError);
+        // Регистрация продолжается даже если письмо не отправилось
+      }
 
       return this.authService.generateTokensForUser(user, context);
     } catch (error) {
@@ -199,5 +208,28 @@ export class UsersService {
       refreshTokenExpiresAt,
       context
     );
+  }
+
+  async updateVerificationToken(userId: number, token: string, expires: Date): Promise<void> {
+    await this.userRepository.update(userId, {
+      verificationToken: token,
+      verificationTokenExpires: expires,
+    });
+  }
+
+  async findByVerificationToken(token: string): Promise<User | null> {
+    return this.userRepository.findByVerificationToken(token);
+  }
+
+  async markAsVerified(userId: number): Promise<void> {
+    await this.userRepository.update(userId, {
+      isVerified: true,
+      verificationToken: undefined,
+      verificationTokenExpires: undefined,
+    });
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    return this.userRepository.findByEmail(email);
   }
 }

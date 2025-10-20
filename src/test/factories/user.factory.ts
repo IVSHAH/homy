@@ -19,11 +19,12 @@ export class UserFactory {
       password: 'hashed_password_123',
       age: 25,
       description: 'Test user description',
-      refreshTokenHash: null,
-      refreshTokenExpiresAt: null,
       createdAt: new Date('2024-01-01'),
       updatedAt: new Date('2024-01-01'),
       deletedAt: null,
+      isVerified: true,
+      verificationToken: null,
+      verificationTokenExpires: null,
       ...overrides,
     });
   }
@@ -50,17 +51,11 @@ export class UserFactory {
   }
 
   static createWithRefreshToken(): User {
-    return this.create({
-      refreshTokenHash: 'hashed_refresh_token_123',
-      refreshTokenExpiresAt: new Date(Date.now() + 86400000),
-    });
+    return this.create({});
   }
 
   static createWithExpiredRefreshToken(): User {
-    return this.create({
-      refreshTokenHash: 'hashed_refresh_token_expired',
-      refreshTokenExpiresAt: new Date(Date.now() - 1000),
-    });
+    return this.create({});
   }
 
   static createMany(count: number, overridesFn?: (index: number) => Partial<User>): User[] {

@@ -35,7 +35,7 @@ services:
 #     volumes:
 #       - redis_data:/data
 
-# volumes:
-#   postgres_data:
-#   minio_storage:
-#   redis_data:
+volumes:
+  postgres_data:
+  minio_storage:
+  #redis_data:

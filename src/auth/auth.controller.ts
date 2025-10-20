@@ -3,11 +3,14 @@ import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagg
 import { Context } from '../common/decorators/context.decorator';
 import { RequestContext } from '../common/interfaces/request-context.interface';
 import { User } from '../common/decorators/user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { SignInDto } from '../features/users/dto/sign-in.dto';
 import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { SessionResponseDto } from './dto/session-response.dto';
 import { RevokeSessionsDto } from './dto/revoke-sessions.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { AuthService } from './auth.service';
 
 @ApiTags('auth')
@@ -66,5 +69,24 @@ export class AuthController {
     @Body() dto: RevokeSessionsDto
   ): Promise<void> {
     return this.authService.revokeAllSessions(userId, dto.currentTokenId);
+  }
+
+  @Post('verify-email')
+  @Public()
+  @ApiOperation({ summary: 'Verify email address with OTP code' })
+  @ApiResponse({ status: 200, description: 'Email verified successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired verification code' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<{ message: string }> {
+    return this.authService.verifyEmail(dto.email, dto.code);
+  }
+
+  @Post('resend-verification')
+  @Public()
+  @ApiOperation({ summary: 'Resend verification email' })
+  @ApiResponse({ status: 200, description: 'Verification email sent' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  async resendVerification(@Body() dto: ResendVerificationDto): Promise<{ message: string }> {
+    return this.authService.resendVerification(dto.email);
   }
 }

@@ -8,6 +8,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { RefreshToken } from '../../../auth/entities/refresh-token.entity';
+import { Role } from 'src/common/enums/role.enum';
 
 @Entity()
 export class User {
@@ -40,4 +41,16 @@ export class User {
 
   @OneToMany(() => RefreshToken, (token: RefreshToken) => token.user)
   refreshTokens: RefreshToken[];
+
+  @Column({ type: 'enum', enum: Role, default: Role.USER })
+  role: Role;
+
+  @Column({ default: false })
+  isVerified: boolean;
+
+  @Column({ nullable: true })
+  verificationToken?: string;
+
+  @Column({ type: 'timestamptz', nullable: true })
+  verificationTokenExpires?: Date;
 }

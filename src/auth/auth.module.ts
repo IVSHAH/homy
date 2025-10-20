@@ -6,11 +6,17 @@ import { PassportModule } from '@nestjs/passport';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { MailModule } from '../mail/mail.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RefreshToken } from './entities/refresh-token.entity';
+import { RefreshTokenRepository } from './refresh-token.repository';
 
 @Module({
   imports: [
     PassportModule,
     ConfigModule,
+    MailModule,
+    TypeOrmModule.forFeature([RefreshToken]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -21,7 +27,7 @@ import { AuthController } from './auth.controller';
     }),
     forwardRef(() => UsersModule),
   ],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, RefreshTokenRepository],
   controllers: [AuthController],
   exports: [AuthService, JwtModule],
 })

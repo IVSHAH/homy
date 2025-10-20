@@ -98,6 +98,12 @@ export class UserRepository {
     return count > 0;
   }
 
+  async findByVerificationToken(token: string): Promise<User | null> {
+    return this.userRepository.findOne({
+      where: { verificationToken: token, deletedAt: IsNull() },
+    });
+  }
+
   private createQueryBuilder(alias: string = 'user'): SelectQueryBuilder<User> {
     return this.userRepository
       .createQueryBuilder(alias)
